@@ -6,53 +6,63 @@ class Program
     static void Main(string[] args)
     {
 
-        Console.WriteLine("수식을 입력해주세요 :");
-        string input = Console.ReadLine();
-
-        if(string.IsNullOrEmpty(input))
-        {
-            Console.WriteLine("수식이 입력되지 않았습니다."); // 널 예외처리 
-            return;
-        }
-        if (!Regex.IsMatch(input, @"^[0-9+\-*/(). ]+$")) // 숫자와 부호 이외의 문자 예외처리
-        {
-            Console.WriteLine("잘못된 입력입니다.");
-            return;
-        }
-
-        string current = input;
-
         while (true) 
-        { 
-            char[] chars = current.ToCharArray();
+        {
+            Console.WriteLine("수식을 입력해주세요 :");
+            string input = Console.ReadLine();
 
-            int startGalho = 0, endGalho = 0;
-
-            for (int i = 0; i < current.Length; i++)
+            if (string.IsNullOrEmpty(input))
             {
-                if (chars[i] == '(') 
-                {
-                    startGalho = i;
-                }
-                else if (chars[i] == ')')
-                {
-                    endGalho = i;
-                    string galhoString = current.Substring(startGalho + 1, endGalho - startGalho - 1); // 괄호 안에 문자열 추출
-                    decimal galhoResult = StringMagicSolve(galhoString); // 추출한 문자열 계산
-                    // 괄호 있던 자리에 계산한 결과로 바꾸기
-                    current = current.Replace(current.Substring(startGalho, endGalho - startGalho + 1), galhoResult.ToString());
-
-                    startGalho = 0;
-                    endGalho = 0;
-                    galhoResult = 0;
-                }
+                Console.WriteLine("수식이 입력되지 않았습니다."); // 널 예외처리 
+                continue;
             }
-            if (!chars.Contains('(') && !chars.Contains(')')) break;
-        }
+            if(input == "종료") 
+            {
+                Console.WriteLine("프로그램을 종료합니다."); 
+                break;
+            }
+            if (!Regex.IsMatch(input, @"^[0-9+\-*/(). ]+$")) // 숫자와 부호 이외의 문자 예외처리
+            {
+                Console.WriteLine("잘못된 입력입니다.");
+                continue;
+            }
 
-        decimal result = StringMagicSolve(current);
-        Console.WriteLine("결과: " + result);
+            string current = input;
+
+            while (true)
+            {
+                char[] chars = current.ToCharArray();
+
+                int startGalho = 0, endGalho = 0;
+
+                for (int i = 0; i < current.Length; i++)
+                {
+                    if (chars[i] == '(')
+                    {
+                        startGalho = i;
+                    }
+                    else if (chars[i] == ')')
+                    {
+                        endGalho = i;
+                        string galhoString = current.Substring(startGalho + 1, endGalho - startGalho - 1); // 괄호 안에 문자열 추출
+                        decimal galhoResult = StringMagicSolve(galhoString); // 추출한 문자열 계산
+                                                                             // 괄호 있던 자리에 계산한 결과로 바꾸기
+                        current = current.Replace(current.Substring(startGalho, endGalho - startGalho + 1), galhoResult.ToString());
+
+                        startGalho = 0;
+                        endGalho = 0;
+                        galhoResult = 0;
+                    }
+                }
+                if (!chars.Contains('(') && !chars.Contains(')')) break;
+            }
+
+            decimal result = StringMagicSolve(current);
+            Console.WriteLine("결과: " + result);
+        }
     }
+
+       
 
     // 문자열 받아서 *, / 먼저 계산 후 +, - 계산하는 마법의 함수
     static decimal StringMagicSolve(string input)
