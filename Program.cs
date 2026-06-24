@@ -8,6 +8,18 @@ class Program
 
         Console.WriteLine("수식을 입력해주세요 :");
         string input = Console.ReadLine();
+
+        if(string.IsNullOrEmpty(input))
+        {
+            Console.WriteLine("수식이 입력되지 않았습니다."); // 널 예외처리 
+            return;
+        }
+        if (!Regex.IsMatch(input, @"^[0-9+\-*/(). ]+$")) // 숫자와 부호 이외의 문자 예외처리
+        {
+            Console.WriteLine("잘못된 입력입니다.");
+            return;
+        }
+
         string current = input;
 
         while (true) 
@@ -29,13 +41,13 @@ class Program
                     decimal galhoResult = StringMagicSolve(galhoString); // 추출한 문자열 계산
                     // 괄호 있던 자리에 계산한 결과로 바꾸기
                     current = current.Replace(current.Substring(startGalho, endGalho - startGalho + 1), galhoResult.ToString());
+
                     startGalho = 0;
                     endGalho = 0;
-                    i = 0;
+                    galhoResult = 0;
                 }
             }
-            if (chars.Contains('(') && chars.Contains(')')) continue;
-            break;
+            if (!chars.Contains('(') && !chars.Contains(')')) break;
         }
 
         decimal result = StringMagicSolve(current);
@@ -50,6 +62,7 @@ class Program
         input = input.Replace(" ", string.Empty); // 공백 제거
         if (input.StartsWith("+")) input = input.Substring(1);
         List<string> solveList = Regex.Split(input, @"([+\-*/])").ToList();
+        solveList.RemoveAll(x => string.IsNullOrEmpty(x)); // 공백 제거
         solveList = MinusChangeList(solveList);
 
         while (true)
@@ -99,15 +112,15 @@ class Program
             if (solveList.Count == 1) break;
         }
         solveValue = decimal.Parse(solveList[0]);
-        return solveValue;
+        if (solveValue % 1 == 0) return (int)solveValue;
+        else return solveValue;
     }
 
     static List<string> MinusChangeList(List<string> input) // 숫자를 음수로 처리할 수 있게하는 함수
     {
         List<string> resultList = input;
-        if (resultList[0] == string.Empty && resultList[1] == "-") // 첫 번째 값 -일 때 변경
+        if (resultList[0] == "-") // 첫 번째 값 -일 때 변경
         {
-            resultList.RemoveAt(0);
             resultList[0] = (-decimal.Parse(resultList[1])).ToString();
             resultList.RemoveAt(1);
 
@@ -116,11 +129,10 @@ class Program
         for (int i = 0; i < resultList.Count; i++) // 앞에 다른 부호 있을 시 숫자를 -로 변경
         {
             if(i < 2) continue;
-            if (resultList[i] == "-" && AnotherBuho(resultList[i - 2])) // 연산자 뒤에 -가 올 때
+            if (resultList[i] == "-" && AnotherBuho(resultList[i - 1])) // 연산자 뒤에 -가 올 때
             {
-                resultList.RemoveAt(i - 1);
-                resultList[i - 1] = (-decimal.Parse(resultList[i])).ToString();
-                resultList.RemoveAt(i);
+                resultList[i] = (-decimal.Parse(resultList[i + 1])).ToString();
+                resultList.RemoveAt(i + 1);
             }
         }
 
